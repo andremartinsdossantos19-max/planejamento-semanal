@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planejamento Semanal</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Georgia, serif;
+      background: #f0f4f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+      min-height: 100vh;
+    }
+
+    .print-btn {
+      margin-bottom: 16px;
+      padding: 10px 28px;
+      background: #1a3a6c;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      letter-spacing: 0.5px;
+      transition: background 0.2s;
+    }
+    .print-btn:hover { background: #0f2448; }
+
+    .page {
+      position: relative;
+      width: 100%;
+      max-width: 960px;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+      padding: 24px;
+      overflow: hidden;
+    }
+
+    .watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 320px;
+      opacity: 0.10;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 2px solid #1a3a6c;
+      position: relative;
+      z-index: 1;
+    }
+
+    .title-cell {
+      background: #c8dff0;
+      text-align: center;
+      padding: 10px 8px;
+      border-bottom: 2px solid #1a3a6c;
+    }
+    .title-cell span {
+      font-style: italic;
+      font-weight: bold;
+      font-size: 24px;
+      color: #1a3a6c;
+      font-family: Georgia, serif;
+      letter-spacing: 1px;
+    }
+
+    .corner-cell {
+      background: #ddeef8;
+      border: 1.5px solid #1a3a6c;
+      width: 13%;
+    }
+
+    .day-header {
+      background: #ddeef8;
+      border: 1.5px solid #1a3a6c;
+      padding: 7px 4px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: #1a3a6c;
+      font-family: Arial, sans-serif;
+      width: 17.4%;
+    }
+    .day-header .date-line {
+      font-size: 11px;
+      font-weight: normal;
+      color: #1a3a6c;
+      margin-top: 3px;
+      letter-spacing: 0.3px;
+    }
+
+    .row-label {
+      background: #ddeef8;
+      border: 1.5px solid #1a3a6c;
+      padding: 10px 8px;
+      font-style: italic;
+      font-size: 13px;
+      color: #1a3a6c;
+      font-family: Georgia, serif;
+      width: 13%;
+      vertical-align: middle;
+      text-align: left;
+    }
+
+    .content-cell {
+      border: 1.5px solid #1a3a6c;
+      background: #ffffff;
+      padding: 7px 8px;
+      vertical-align: top;
+      font-size: 12px;
+      color: #1a3a6c;
+      font-family: Arial, sans-serif;
+      line-height: 1.5;
+      transition: background 0.2s;
+    }
+    .content-cell.active {
+      background: #eef5fb;
+    }
+
+    .short  { height: 58px; }
+    .medium { height: 75px; }
+    .tall   { height: 100px; }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .print-btn { display: none; }
+      .page { box-shadow: none; padding: 12px; border-radius: 0; }
+      table { border: 2px solid #1a3a6c !important; }
+    }
+  </style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+
+<div class="page">
+
+  <!-- WATERMARK: substitua o src pela URL pública da imagem do logo -->
+  <img
+    class="watermark"
+    id="logoWatermark"
+    src="https://drive.google.com/uc?export=view&id=1RkNHoEvXMgojYBavSDs6pGTFnqTxwJKG"
+    alt=""
+    onerror="this.style.display='none'"
+  />
+
+  <table id="mainTable">
+    <colgroup>
+      <col style="width:13%">
+      <col style="width:17.4%">
+      <col style="width:17.4%">
+      <col style="width:17.4%">
+      <col style="width:17.4%">
+      <col style="width:17.4%">
+    </colgroup>
+
+    <thead>
+      <tr>
+        <td colspan="6" class="title-cell">
+          <span id="periodoTitle">Manhã</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="corner-cell"></td>
+        <td class="day-header">Segunda-feira<div class="date-line" id="date-seg">____/____/2025</div></td>
+        <td class="day-header">Terça-feira<div class="date-line" id="date-ter">____/____/2025</div></td>
+        <td class="day-header">Quarta-feira<div class="date-line" id="date-qua">____/____/2025</div></td>
+        <td class="day-header">Quinta-feira<div class="date-line" id="date-qui">____/____/2025</div></td>
+        <td class="day-header">Sexta-feira<div class="date-line" id="date-sex">____/____/2025</div></td>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td class="row-label short">Proposta e Espaço</td>
+        <td class="content-cell short" data-field="proposta" data-dia="seg"></td>
+        <td class="content-cell short" data-field="proposta" data-dia="ter"></td>
+        <td class="content-cell short" data-field="proposta" data-dia="qua"></td>
+        <td class="content-cell short" data-field="proposta" data-dia="qui"></td>
+        <td class="content-cell short" data-field="proposta" data-dia="sex"></td>
+      </tr>
+      <tr>
+        <td class="row-label short">Materiais</td>
+        <td class="content-cell short" data-field="materiais" data-dia="seg"></td>
+        <td class="content-cell short" data-field="materiais" data-dia="ter"></td>
+        <td class="content-cell short" data-field="materiais" data-dia="qua"></td>
+        <td class="content-cell short" data-field="materiais" data-dia="qui"></td>
+        <td class="content-cell short" data-field="materiais" data-dia="sex"></td>
+      </tr>
+      <tr>
+        <td class="row-label medium">Intencionalidade</td>
+        <td class="content-cell medium" data-field="intencionalidade" data-dia="seg"></td>
+        <td class="content-cell medium" data-field="intencionalidade" data-dia="ter"></td>
+        <td class="content-cell medium" data-field="intencionalidade" data-dia="qua"></td>
+        <td class="content-cell medium" data-field="intencionalidade" data-dia="qui"></td>
+        <td class="content-cell medium" data-field="intencionalidade" data-dia="sex"></td>
+      </tr>
+      <tr>
+        <td class="row-label tall">Desenvolvimento</td>
+        <td class="content-cell tall" data-field="desenvolvimento" data-dia="seg"></td>
+        <td class="content-cell tall" data-field="desenvolvimento" data-dia="ter"></td>
+        <td class="content-cell tall" data-field="desenvolvimento" data-dia="qua"></td>
+        <td class="content-cell tall" data-field="desenvolvimento" data-dia="qui"></td>
+        <td class="content-cell tall" data-field="desenvolvimento" data-dia="sex"></td>
+      </tr>
+      <tr>
+        <td class="row-label tall">Leitura Diária</td>
+        <td class="content-cell tall" data-field="leitura" data-dia="seg"></td>
+        <td class="content-cell tall" data-field="leitura" data-dia="ter"></td>
+        <td class="content-cell tall" data-field="leitura" data-dia="qua"></td>
+        <td class="content-cell tall" data-field="leitura" data-dia="qui"></td>
+        <td class="content-cell tall" data-field="leitura" data-dia="sex"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  const p = new URLSearchParams(window.location.search);
+
+  const periodo        = p.get('periodo')         || 'Manhã';
+  const data           = p.get('data')            || '';
+  const dia            = (p.get('dia') || '').toLowerCase();
+  const proposta       = p.get('proposta')        || '';
+  const materiais      = p.get('materiais')       || '';
+  const intencionalidade = p.get('intencionalidade') || '';
+  const desenvolvimento  = p.get('desenvolvimento')  || '';
+  const leitura          = p.get('leitura')          || '';
+
+  // Título do período
+  document.getElementById('periodoTitle').textContent = periodo;
+
+  // Data no cabeçalho do dia correto
+  if (dia && data) {
+    const el = document.getElementById('date-' + dia);
+    if (el) el.textContent = data;
+  }
+
+  // Preenche as células do dia ativo
+  const fields = {
+    proposta, materiais, intencionalidade, desenvolvimento, leitura
+  };
+
+  if (dia) {
+    Object.entries(fields).forEach(([field, value]) => {
+      const cell = document.querySelector(
+        `[data-field="${field}"][data-dia="${dia}"]`
+      );
+      if (cell) {
+        cell.textContent = value;
+        if (value) cell.classList.add('active');
+      }
+    });
+  }
+</script>
+</body>
+</html>

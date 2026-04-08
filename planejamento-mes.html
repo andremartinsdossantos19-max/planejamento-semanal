@@ -209,9 +209,8 @@
   const SHEET_ID  = '1iSB84o-0CW5NlwpSyfZiubAGD2oNi_8sptXmVVJB_9k';
   const SHEET_TAB = 'PLANEJAMENTO';
 
-  const dataInicioParam = getParam('datainicio'); // ex: "01/04/2026"
-  const dataFimParam    = getParam('datafim');    // ex: "30/04/2026"
-  const periodoParam    = getParam('periodo') || 'Manhã';
+  const dataInicioParam = getParam('datainicio');
+  const dataFimParam    = getParam('datafim');
   const logoParam       = extractUrl(getParam('logo'));
 
   const DIAS_SEMANA = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira'];
@@ -412,9 +411,7 @@
       leitura:          cellVal(row, idx.leitura),
     })).filter(r => r.data);
 
-    // Filtra por período
-    const periodoFiltro = periodoParam.toUpperCase();
-    registros = registros.filter(r => r.periodo.toUpperCase().includes(periodoFiltro) || periodoFiltro === '');
+    // Todos os períodos são exibidos
 
     // Filtra por intervalo de datas
     function parseData(str) {
@@ -444,19 +441,32 @@
     if (registros.length === 0) {
       const err = document.getElementById('erro');
       err.style.display = 'block';
-      err.textContent = `⚠️ Nenhum registro encontrado para ${periodoParam} entre ${dataInicioParam} e ${dataFimParam}.`;
+      err.textContent = `⚠️ Nenhum registro encontrado entre ${dataInicioParam} e ${dataFimParam}.`;
       return;
     }
 
-    // Título do período (title case)
-    const periodoLabel = periodoParam.charAt(0).toUpperCase() + periodoParam.slice(1).toLowerCase();
+    // Obtém períodos únicos na ordem que aparecem (Manhã antes de Tarde)
+    const ORDEM_PERIODOS = ['MANHÃ', 'MANHA', 'MANHÃ ', 'TARDE', 'INTEGRAL', 'CONTRATURNO'];
+    const periodosUnicos = [...new Set(registros.map(r => r.periodo.trim()))]
+      .sort((a, b) => {
+        const ia = ORDEM_PERIODOS.findIndex(p => a.toUpperCase().includes(p));
+        const ib = ORDEM_PERIODOS.findIndex(p => b.toUpperCase().includes(p));
+        return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+      });
 
-    // Agrupa por semana e monta blocos
+    // Agrupa por semana (sem filtro de período)
     const semanas = agruparPorSemana(registros);
     const container = document.getElementById('container');
+
+    // Para cada semana, exibe Manhã depois Tarde (etc)
     Object.keys(semanas).sort().forEach(key => {
-      const { seg, registros: regs } = semanas[key];
-      container.appendChild(montarSemana(seg, regs, periodoLabel));
+      const { seg } = semanas[key];
+      periodosUnicos.forEach(periodo => {
+        const regsPeriodo = semanas[key].registros.filter(r => r.periodo.trim() === periodo);
+        if (regsPeriodo.length === 0) return;
+        const label = periodo.charAt(0).toUpperCase() + periodo.slice(1).toLowerCase();
+        container.appendChild(montarSemana(seg, regsPeriodo, label));
+      });
     });
   }
 

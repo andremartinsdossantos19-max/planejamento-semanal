@@ -289,6 +289,39 @@
     }
     next();
   })();
+
+  // Período
+  const periodo = p.get('periodo') || 'Manhã';
+  document.getElementById('periodoTitle').textContent = periodo;
+
+  // Data e dia
+  const data = p.get('data') || '';
+  const dia  = (p.get('dia') || '').toLowerCase();
+  if (dia && data) {
+    const el = document.getElementById('date-' + dia);
+    if (el) el.textContent = data;
+  }
+
+  // Preenche células do dia ativo
+  const fields = {
+    proposta:         p.get('proposta')         || '',
+    materiais:        p.get('materiais')        || '',
+    intencionalidade: p.get('intencionalidade') || '',
+    desenvolvimento:  p.get('desenvolvimento')  || '',
+    leitura:          p.get('leitura')          || ''
+  };
+
+  if (dia) {
+    Object.entries(fields).forEach(([field, value]) => {
+      const cell = document.querySelector(
+        '[data-field="' + field + '"][data-dia="' + dia + '"]'
+      );
+      if (cell) {
+        cell.textContent = value;
+        if (value) cell.classList.add('active');
+      }
+    });
+  }
 </script>
 </body>
 </html>

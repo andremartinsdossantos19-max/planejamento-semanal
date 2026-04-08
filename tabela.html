@@ -136,10 +136,46 @@
     .tall   { height: 100px; }
 
     @media print {
-      body { background: white; padding: 0; }
-      .print-btn { display: none; }
-      .page { box-shadow: none; padding: 12px; border-radius: 0; }
-      table { border: 2px solid #1a3a6c !important; }
+      @page {
+        size: A4 landscape;
+        margin: 10mm;
+      }
+      body {
+        background: white !important;
+        padding: 0 !important;
+        display: block !important;
+      }
+      .print-btn { display: none !important; }
+      .page {
+        box-shadow: none !important;
+        padding: 8px !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+      table {
+        border: 2px solid #1a3a6c !important;
+        width: 100% !important;
+        page-break-inside: avoid;
+      }
+      .title-cell, .day-header, .corner-cell, .row-label {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        background-color: #ddeef8 !important;
+      }
+      .title-cell {
+        background-color: #c8dff0 !important;
+      }
+      .content-cell.active {
+        background-color: #eef5fb !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .watermark {
+        opacity: 0.10 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
     }
   </style>
 </head>
@@ -233,16 +269,32 @@
 
   (function loadLogo() {
     const raw = p.get('logo');
-    if (!raw) return;
     const img = document.getElementById('logoWatermark');
-    const match = raw.match(/[-\w]{25,}/);
-    if (!match) return;
-    const fileId = match[0];
-    const primary  = 'https://lh3.googleusercontent.com/d/' + fileId;
-    const fallback = 'https://drive.google.com/uc?export=view&id=' + fileId;
-    img.onload  = function() { img.onload = null; img.onerror = null; img.style.display = 'block'; };
-    img.onerror = function() { img.onerror = null; if (img.src !== fallback) { img.src = fallback; } };
-    img.src = primary;
+
+    // Tenta carregar logo.png local do repositório primeiro
+    const localLogo = 'logo.png';
+    const urls = [localLogo];
+
+    if (raw) {
+      const match = raw.match(/[-\w]{25,}/);
+      if (match) {
+        const fileId = match[0];
+        urls.push('https://lh3.googleusercontent.com/d/' + fileId);
+        urls.push('https://drive.google.com/uc?export=view&id=' + fileId);
+      } else if (raw.startsWith('http')) {
+        urls.push(raw);
+      }
+    }
+
+    let idx = 0;
+    function tryNext() {
+      if (idx >= urls.length) return;
+      img.onload  = function() { img.onload = null; img.onerror = null; };
+      img.onerror = function() { img.onerror = null; idx++; tryNext(); };
+      img.src = urls[idx];
+      idx++;
+    }
+    tryNext();
   })();
 
   const periodo        = p.get('periodo')         || 'Manhã';

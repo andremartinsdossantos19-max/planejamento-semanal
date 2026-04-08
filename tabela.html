@@ -43,18 +43,7 @@
       overflow: hidden;
     }
 
-    .watermark {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 55%;
-      opacity: 0.13;
-      z-index: 0;
-      pointer-events: none;
-      user-select: none;
-      display: block;
-    }
+    /* watermark handled via #logo-wrapper */
 
     table {
       width: 100%;
@@ -186,7 +175,9 @@
 
 <div class="page">
 
-  <img class="watermark" id="logoWatermark" alt="" />
+  <div id="logo-wrapper" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; align-items:center; justify-content:center; pointer-events:none; z-index:0;">
+    <img id="logo-img" alt="Logo" style="width:55%; opacity:0.13;" />
+  </div>
 
   <table id="mainTable">
     <colgroup>
@@ -271,28 +262,30 @@
     return raw;
   }
 
-  // ── LOGO WATERMARK via &logo= ──
+  // ── LOGO WATERMARK via &logo= (igual ao modelo que funciona) ──
   (function loadLogo() {
     const rawLogo = extractUrl(getParam('logo'));
     if (!rawLogo) return;
-    const img = document.getElementById('logoWatermark');
+
+    const img     = document.getElementById('logo-img');
+    const wrapper = document.getElementById('logo-wrapper');
+
     const matchLogo = rawLogo.match(/[-\w]{25,}/);
     if (!matchLogo) return;
-    const logoId = matchLogo[0];
-    // Ordem de tentativas - thumbnail é a mais permissiva para cross-origin
-    const urls = [
-      'https://drive.google.com/thumbnail?id=' + logoId + '&sz=w800',
-      'https://lh3.googleusercontent.com/d/' + logoId,
-      'https://drive.google.com/uc?export=view&id=' + logoId
-    ];
-    let i = 0;
-    function tryNext() {
-      if (i >= urls.length) return;
-      img.onerror = function() { i++; tryNext(); };
-      img.onload  = function() { img.onerror = null; img.onload = null; };
-      img.src = urls[i++];
+    const logoId    = matchLogo[0];
+    const primary   = 'https://lh3.googleusercontent.com/d/' + logoId;
+    const fallback  = 'https://drive.google.com/uc?export=view&id=' + logoId;
+
+    function showLogo(src) {
+      img.onload  = null;
+      img.onerror = null;
+      img.src = src;
+      wrapper.style.display = 'flex';
     }
-    tryNext();
+
+    img.onload  = function() { showLogo(img.src); };
+    img.onerror = function() { if (fallback && img.src !== fallback) img.src = fallback; };
+    img.src = primary;
   })();
 
   // ── PERÍODO ──

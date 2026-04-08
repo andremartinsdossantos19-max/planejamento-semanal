@@ -118,7 +118,7 @@
       transition: background 0.2s;
     }
     .content-cell.active {
-      background: #eef5fb;
+      background: rgba(255,255,255,0.85);
     }
 
     .short  { height: 58px; }
@@ -128,7 +128,11 @@
     @media print {
       @page {
         size: A4 landscape;
-        margin: 10mm;
+        margin: 8mm;
+      }
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
       body {
         background: white !important;
@@ -142,29 +146,34 @@
         border-radius: 0 !important;
         max-width: 100% !important;
         width: 100% !important;
+        position: relative !important;
+        overflow: visible !important;
       }
       table {
         border: 2px solid #1a3a6c !important;
         width: 100% !important;
         page-break-inside: avoid;
       }
-      .title-cell, .day-header, .corner-cell, .row-label {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        background-color: #ddeef8 !important;
-      }
       .title-cell {
         background-color: #c8dff0 !important;
       }
-      .content-cell.active {
-        background-color: #eef5fb !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
+      .day-header, .corner-cell, .row-label {
+        background-color: #ddeef8 !important;
       }
-      .watermark {
-        opacity: 0.10 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
+      .content-cell {
+        background-color: rgba(255,255,255,0.85) !important;
+      }
+      #logo-wrapper {
+        display: flex !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+      }
+      #logo-img {
+        width: 55% !important;
+        opacity: 0.47 !important;
       }
     }
   </style>
@@ -176,7 +185,7 @@
 <div class="page">
 
   <div id="logo-wrapper" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; align-items:center; justify-content:center; pointer-events:none; z-index:0; overflow:hidden;">
-    <img id="logo-img" alt="Logo" style="width:55%; opacity:0.22;" />
+    <img id="logo-img" alt="Logo" style="width:55%; opacity:0.47;" />
   </div>
 
   <table id="mainTable">
@@ -197,11 +206,11 @@
       </tr>
       <tr>
         <td class="corner-cell"></td>
-        <td class="day-header">Segunda-feira<div class="date-line" id="date-seg">____/____/2025</div></td>
-        <td class="day-header">Terça-feira<div class="date-line" id="date-ter">____/____/2025</div></td>
-        <td class="day-header">Quarta-feira<div class="date-line" id="date-qua">____/____/2025</div></td>
-        <td class="day-header">Quinta-feira<div class="date-line" id="date-qui">____/____/2025</div></td>
-        <td class="day-header">Sexta-feira<div class="date-line" id="date-sex">____/____/2025</div></td>
+        <td class="day-header">Segunda-feira<div class="date-line" id="date-seg">____/____/____</div></td>
+        <td class="day-header">Terça-feira<div class="date-line" id="date-ter">____/____/____</div></td>
+        <td class="day-header">Quarta-feira<div class="date-line" id="date-qua">____/____/____</div></td>
+        <td class="day-header">Quinta-feira<div class="date-line" id="date-qui">____/____/____</div></td>
+        <td class="day-header">Sexta-feira<div class="date-line" id="date-sex">____/____/____</div></td>
       </tr>
     </thead>
 
@@ -289,7 +298,9 @@
   })();
 
   // ── PERÍODO ──
-  const periodo = getParam('periodo') || 'Manhã';
+  const periodoRaw = getParam('periodo') || 'Manhã';
+  // Converte para título: MANHÃ → Manhã
+  const periodo = periodoRaw.charAt(0).toUpperCase() + periodoRaw.slice(1).toLowerCase();
   document.getElementById('periodoTitle').textContent = periodo;
 
   // ── DATA E DIA ──

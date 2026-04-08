@@ -149,11 +149,10 @@
 
 <div class="page">
 
-  <!-- WATERMARK: substitua o src pela URL pública da imagem do logo -->
   <img
     class="watermark"
     id="logoWatermark"
-    src="https://drive.google.com/uc?export=view&id=1RkNHoEvXMgojYBavSDs6pGTFnqTxwJKG"
+    src=""
     alt=""
     onerror="this.style.display='none'"
   />
@@ -231,6 +230,15 @@
 
 <script>
   const p = new URLSearchParams(window.location.search);
+
+  const logo = p.get('logo');
+  if (logo) {
+    const img = document.getElementById('logoWatermark');
+    const match = logo.match(/\/d\/([\w-]+)/);
+    img.src = match
+      ? 'https://drive.google.com/uc?export=view&id=' + match[1]
+      : logo;
+  }
 
   const periodo        = p.get('periodo')         || 'Manhã';
   const data           = p.get('data')            || '';

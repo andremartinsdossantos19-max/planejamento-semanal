@@ -278,17 +278,21 @@
     const img = document.getElementById('logoWatermark');
     const matchLogo = rawLogo.match(/[-\w]{25,}/);
     if (!matchLogo) return;
-    const logoId   = matchLogo[0];
-    const primary  = 'https://lh3.googleusercontent.com/d/' + logoId;
-    const fallback = 'https://drive.google.com/uc?export=view&id=' + logoId;
-    function showLogo(src) {
-      img.onload  = null;
-      img.onerror = null;
-      img.src     = src;
+    const logoId = matchLogo[0];
+    // Ordem de tentativas - thumbnail é a mais permissiva para cross-origin
+    const urls = [
+      'https://drive.google.com/thumbnail?id=' + logoId + '&sz=w800',
+      'https://lh3.googleusercontent.com/d/' + logoId,
+      'https://drive.google.com/uc?export=view&id=' + logoId
+    ];
+    let i = 0;
+    function tryNext() {
+      if (i >= urls.length) return;
+      img.onerror = function() { i++; tryNext(); };
+      img.onload  = function() { img.onerror = null; img.onload = null; };
+      img.src = urls[i++];
     }
-    img.onload  = function() { showLogo(img.src); };
-    img.onerror = function() { if (img.src !== fallback) img.src = fallback; };
-    img.src = primary;
+    tryNext();
   })();
 
   // ── PERÍODO ──

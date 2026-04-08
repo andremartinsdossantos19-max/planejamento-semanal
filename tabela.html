@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Planejamento Mensal</title>
+  <title>Planejamento Semanal</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -17,14 +17,8 @@
       min-height: 100vh;
     }
 
-    .top-bar {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-      align-items: center;
-    }
-
     .print-btn {
+      margin-bottom: 16px;
       padding: 10px 28px;
       background: #2a2a3a;
       color: white;
@@ -33,56 +27,23 @@
       cursor: pointer;
       font-size: 14px;
       font-family: Arial, sans-serif;
+      letter-spacing: 0.5px;
       transition: background 0.2s;
     }
     .print-btn:hover { background: #1a1a2a; }
 
-    #loading {
-      font-family: Arial, sans-serif;
-      color: #555;
-      font-size: 15px;
-      margin: 40px 0;
-    }
-
-    #erro {
-      display: none;
-      font-family: Arial, sans-serif;
-      color: #c0392b;
-      font-size: 14px;
-      background: #fdecea;
-      padding: 12px 20px;
-      border-radius: 8px;
-      margin: 20px 0;
-    }
-
-    /* ── SEMANA ── */
-    .semana-block {
+    .page {
       position: relative;
       width: 100%;
-      max-width: 1000px;
+      max-width: 960px;
       background: white;
       border-radius: 4px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.10);
-      padding: 16px;
+      padding: 24px;
       overflow: hidden;
-      margin-bottom: 28px;
     }
 
-    .logo-wrapper {
-      display: none;
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-    .logo-wrapper img {
-      width: 38%;
-      opacity: 1;
-    }
+    /* watermark handled via #logo-wrapper */
 
     table {
       width: 100%;
@@ -96,14 +57,15 @@
       background: #deebf6;
       text-align: center;
       padding: 10px 8px;
-      border-bottom: 2px solid #2a2a3a;
+      border-bottom: 2px solid #1a1a2e;
     }
     .title-cell span {
       font-style: italic;
       font-weight: bold;
-      font-size: 22px;
+      font-size: 24px;
       color: #1a1a2e;
       font-family: Georgia, serif;
+      letter-spacing: 1px;
     }
 
     .corner-cell {
@@ -126,8 +88,9 @@
     .day-header .date-line {
       font-size: 11px;
       font-weight: normal;
-      color: #444444;
+      color: #1a1a2e;
       margin-top: 3px;
+      letter-spacing: 0.3px;
     }
 
     .row-label {
@@ -140,6 +103,7 @@
       font-family: Georgia, serif;
       width: 13%;
       vertical-align: middle;
+      text-align: left;
     }
 
     .content-cell {
@@ -151,12 +115,10 @@
       color: #1a1a2e;
       font-family: Arial, sans-serif;
       line-height: 1.5;
+      transition: background 0.2s;
     }
-    .content-cell.feriado {
-      font-style: italic;
-      color: #888;
-      text-align: center;
-      vertical-align: middle;
+    .content-cell.active {
+      background: rgba(255,255,255,0.88);
     }
 
     .short  { height: 58px; }
@@ -164,303 +126,214 @@
     .tall   { height: 100px; }
 
     @media print {
-      @page { size: A4 landscape; margin: 8mm; }
-      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-      body { background: white !important; padding: 0 !important; display: block !important; }
+      @page {
+        size: A4 landscape;
+        margin: 8mm;
+      }
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      body {
+        background: white !important;
+        padding: 0 !important;
+        display: block !important;
+      }
       .print-btn { display: none !important; }
-      .semana-block {
+      .page {
         box-shadow: none !important;
         padding: 8px !important;
         border-radius: 0 !important;
         max-width: 100% !important;
-        page-break-after: always;
+        width: 100% !important;
+        position: relative !important;
+        overflow: visible !important;
+      }
+      table {
+        border: 2px solid #2a2a3a !important;
+        width: 100% !important;
+        page-break-inside: avoid;
+      }
+      .title-cell {
+        background-color: #deebf6 !important;
+      }
+      .day-header, .corner-cell, .row-label {
+        background-color: #deebf6 !important;
+      }
+      .content-cell {
+        background-color: rgba(255,255,255,0.88) !important;
+      }
+      .page {
         overflow: hidden !important;
       }
-      .semana-block:last-child { page-break-after: auto; }
-      .logo-wrapper { display: flex !important; }
-      .logo-wrapper img { opacity: 0.42 !important; }
-      table { border: 2px solid #2a2a3a !important; }
-      .title-cell, .day-header, .corner-cell, .row-label {
-        background-color: #deebf6 !important;
+      #logo-wrapper {
+        display: flex !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+      }
+      #logo-img {
+        width: 38% !important;
+        opacity: 1 !important;
       }
     }
   </style>
 </head>
 <body>
 
-<div class="top-bar no-print">
-  <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
-</div>
+<button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
 
-<div id="loading">⏳ Carregando planejamento...</div>
-<div id="erro"></div>
-<div id="container"></div>
+<div class="page">
+
+  <div id="logo-wrapper" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; align-items:center; justify-content:center; pointer-events:none; z-index:0; overflow:hidden;">
+    <img id="logo-img" alt="Logo" style="width:55%; opacity:1;" />
+  </div>
+
+  <table id="mainTable">
+    <colgroup>
+      <col style="width:13%">
+      <col style="width:17.4%">
+      <col style="width:17.4%">
+      <col style="width:17.4%">
+      <col style="width:17.4%">
+      <col style="width:17.4%">
+    </colgroup>
+
+    <thead>
+      <tr>
+        <td colspan="6" class="title-cell">
+          <span id="periodoTitle">Manhã</span>
+        </td>
+      </tr>
+      <tr>
+        <td class="corner-cell"></td>
+        <td class="day-header">Segunda-feira<div class="date-line" id="date-seg">____/____/____</div></td>
+        <td class="day-header">Terça-feira<div class="date-line" id="date-ter">____/____/____</div></td>
+        <td class="day-header">Quarta-feira<div class="date-line" id="date-qua">____/____/____</div></td>
+        <td class="day-header">Quinta-feira<div class="date-line" id="date-qui">____/____/____</div></td>
+        <td class="day-header">Sexta-feira<div class="date-line" id="date-sex">____/____/____</div></td>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td class="row-label short">Proposta e Espaço</td>
+        <td class="content-cell short" data-field="proposta" data-dia="seg"></td>
+        <td class="content-cell short" data-field="proposta" data-dia="ter"></td>
+        <td class="content-cell short" data-field="proposta" data-dia="qua"></td>
+        <td class="content-cell short" data-field="proposta" data-dia="qui"></td>
+        <td class="content-cell short" data-field="proposta" data-dia="sex"></td>
+      </tr>
+      <tr>
+        <td class="row-label short">Materiais</td>
+        <td class="content-cell short" data-field="materiais" data-dia="seg"></td>
+        <td class="content-cell short" data-field="materiais" data-dia="ter"></td>
+        <td class="content-cell short" data-field="materiais" data-dia="qua"></td>
+        <td class="content-cell short" data-field="materiais" data-dia="qui"></td>
+        <td class="content-cell short" data-field="materiais" data-dia="sex"></td>
+      </tr>
+      <tr>
+        <td class="row-label medium">Intencionalidade</td>
+        <td class="content-cell medium" data-field="intencionalidade" data-dia="seg"></td>
+        <td class="content-cell medium" data-field="intencionalidade" data-dia="ter"></td>
+        <td class="content-cell medium" data-field="intencionalidade" data-dia="qua"></td>
+        <td class="content-cell medium" data-field="intencionalidade" data-dia="qui"></td>
+        <td class="content-cell medium" data-field="intencionalidade" data-dia="sex"></td>
+      </tr>
+      <tr>
+        <td class="row-label tall">Desenvolvimento</td>
+        <td class="content-cell tall" data-field="desenvolvimento" data-dia="seg"></td>
+        <td class="content-cell tall" data-field="desenvolvimento" data-dia="ter"></td>
+        <td class="content-cell tall" data-field="desenvolvimento" data-dia="qua"></td>
+        <td class="content-cell tall" data-field="desenvolvimento" data-dia="qui"></td>
+        <td class="content-cell tall" data-field="desenvolvimento" data-dia="sex"></td>
+      </tr>
+      <tr>
+        <td class="row-label tall">Leitura Diária</td>
+        <td class="content-cell tall" data-field="leitura" data-dia="seg"></td>
+        <td class="content-cell tall" data-field="leitura" data-dia="ter"></td>
+        <td class="content-cell tall" data-field="leitura" data-dia="qua"></td>
+        <td class="content-cell tall" data-field="leitura" data-dia="qui"></td>
+        <td class="content-cell tall" data-field="leitura" data-dia="sex"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <script>
   function getParam(name) {
     return new URL(window.location.href).searchParams.get(name) || '';
   }
+
+  // AppSheet às vezes envia {"Url":"https://...","LinkText":"..."} — extrai URL limpa
   function extractUrl(raw) {
     if (!raw) return '';
     try { const o = JSON.parse(raw); if (o && o.Url) return o.Url; } catch(_) {}
     return raw;
   }
 
-  const SHEET_ID  = '1iSB84o-0CW5NlwpSyfZiubAGD2oNi_8sptXmVVJB_9k';
-  const SHEET_TAB = 'PLANEJAMENTO';
+  // ── LOGO WATERMARK via &logo= (igual ao modelo que funciona) ──
+  (function loadLogo() {
+    const rawLogo = extractUrl(getParam('logo'));
+    if (!rawLogo) return;
 
-  const dataInicioParam = getParam('datainicio'); // ex: "01/04/2026"
-  const dataFimParam    = getParam('datafim');    // ex: "30/04/2026"
-  const periodoParam    = getParam('periodo') || 'Manhã';
-  const logoParam       = extractUrl(getParam('logo'));
+    const img     = document.getElementById('logo-img');
+    const wrapper = document.getElementById('logo-wrapper');
 
-  const DIAS_SEMANA = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira'];
-  const DIAS_KEY    = ['seg','ter','qua','qui','sex'];
-  const FIELDS      = ['proposta','materiais','intencionalidade','desenvolvimento','leitura'];
-  const LABELS      = ['Proposta e Espaço','Materiais','Intencionalidade','Desenvolvimento','Leitura Diária'];
-  const HEIGHTS     = ['short','short','medium','tall','tall'];
+    const matchLogo = rawLogo.match(/[-\w]{25,}/);
+    if (!matchLogo) return;
+    const logoId    = matchLogo[0];
+    const primary   = 'https://lh3.googleusercontent.com/d/' + logoId;
+    const fallback  = 'https://drive.google.com/uc?export=view&id=' + logoId;
 
-  // ── Carrega logo em todos os wrappers ──
-  function loadLogo(wrapper) {
-    if (!logoParam) return;
-    const match = logoParam.match(/[-\w]{25,}/);
-    if (!match) return;
-    const logoId   = match[0];
-    const primary  = 'https://lh3.googleusercontent.com/d/' + logoId;
-    const fallback = 'https://drive.google.com/uc?export=view&id=' + logoId;
-    const img = wrapper.querySelector('img');
-    function showLogo(src) { img.onload = null; img.onerror = null; img.src = src; wrapper.style.display = 'flex'; }
+    function showLogo(src) {
+      img.onload  = null;
+      img.onerror = null;
+      img.src = src;
+      wrapper.style.display = 'flex';
+    }
+
     img.onload  = function() { showLogo(img.src); };
-    img.onerror = function() { if (img.src !== fallback) img.src = fallback; };
+    img.onerror = function() { if (fallback && img.src !== fallback) img.src = fallback; };
     img.src = primary;
+  })();
+
+  // ── PERÍODO ──
+  const periodoRaw = getParam('periodo') || 'Manhã';
+  // Converte para título: MANHÃ → Manhã
+  const periodo = periodoRaw.charAt(0).toUpperCase() + periodoRaw.slice(1).toLowerCase();
+  document.getElementById('periodoTitle').textContent = periodo;
+
+  // ── DATA E DIA ──
+  const data = getParam('data');
+  const dia  = getParam('dia').toLowerCase();
+  if (dia && data) {
+    const el = document.getElementById('date-' + dia);
+    if (el) el.textContent = data;
   }
 
-  // ── Formata data DD/MM/YYYY ──
-  function fmtData(dateStr) {
-    if (!dateStr) return '____/____/____';
-    // Tenta parsear vários formatos
-    let d;
-    if (dateStr.includes('/')) {
-      const parts = dateStr.split('/');
-      if (parts.length === 3) {
-        // pode ser DD/MM/YYYY ou MM/DD/YYYY
-        d = new Date(parts[2], parseInt(parts[1])-1, parseInt(parts[0]));
+  // ── PREENCHE CÉLULAS ──
+  const fields = {
+    proposta:         getParam('proposta'),
+    materiais:        getParam('materiais'),
+    intencionalidade: getParam('intencionalidade'),
+    desenvolvimento:  getParam('desenvolvimento'),
+    leitura:          getParam('leitura')
+  };
+
+  if (dia) {
+    Object.entries(fields).forEach(([field, value]) => {
+      const cell = document.querySelector(
+        '[data-field="' + field + '"][data-dia="' + dia + '"]'
+      );
+      if (cell) {
+        cell.textContent = value;
+        if (value) cell.classList.add('active');
       }
-    } else if (dateStr.includes('-')) {
-      d = new Date(dateStr);
-    }
-    if (!d || isNaN(d)) return dateStr;
-    return d.toLocaleDateString('pt-BR');
-  }
-
-  // ── Agrupa registros por semana (seg a sex) ──
-  function agruparPorSemana(registros) {
-    const semanas = {};
-    registros.forEach(r => {
-      if (!r.data) return;
-      let d;
-      const s = r.data.trim();
-      if (s.includes('/')) {
-        const p = s.split('/');
-        d = new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
-      } else {
-        d = new Date(s);
-      }
-      if (isNaN(d)) return;
-      // Encontra a segunda-feira da semana
-      const dow = d.getDay(); // 0=dom,1=seg...
-      const diff = (dow === 0) ? -6 : 1 - dow;
-      const seg = new Date(d);
-      seg.setDate(d.getDate() + diff);
-      const key = seg.toISOString().slice(0,10);
-      if (!semanas[key]) semanas[key] = { seg, registros: [] };
-      semanas[key].registros.push(r);
-    });
-    return semanas;
-  }
-
-  // ── Monta HTML de uma semana ──
-  function montarSemana(seg, registros, periodoLabel) {
-    // Cria mapa dia → registro
-    const mapa = {};
-    registros.forEach(r => {
-      if (!r.data) return;
-      let d;
-      const s = r.data.trim();
-      if (s.includes('/')) {
-        const p = s.split('/');
-        d = new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
-      } else { d = new Date(s); }
-      if (isNaN(d)) return;
-      const dow = d.getDay();
-      const keyIdx = dow - 1; // seg=0, ter=1...
-      if (keyIdx >= 0 && keyIdx <= 4) mapa[DIAS_KEY[keyIdx]] = r;
-    });
-
-    // Datas dos 5 dias da semana
-    const datas = DIAS_KEY.map((_, i) => {
-      const dd = new Date(seg);
-      dd.setDate(seg.getDate() + i);
-      return dd;
-    });
-
-    const block = document.createElement('div');
-    block.className = 'semana-block';
-
-    // Logo wrapper
-    const logoDiv = document.createElement('div');
-    logoDiv.className = 'logo-wrapper';
-    logoDiv.innerHTML = '<img alt="Logo"/>';
-    block.appendChild(logoDiv);
-    loadLogo(logoDiv);
-
-    // Table
-    const table = document.createElement('table');
-    table.innerHTML = `
-      <colgroup>
-        <col style="width:13%">
-        <col style="width:17.4%"><col style="width:17.4%">
-        <col style="width:17.4%"><col style="width:17.4%"><col style="width:17.4%">
-      </colgroup>
-      <thead>
-        <tr><td colspan="6" class="title-cell"><span>${periodoLabel}</span></td></tr>
-        <tr>
-          <td class="corner-cell"></td>
-          ${DIAS_SEMANA.map((nome, i) => `
-            <td class="day-header">${nome}
-              <div class="date-line">${datas[i].toLocaleDateString('pt-BR')}</div>
-            </td>`).join('')}
-        </tr>
-      </thead>
-      <tbody>
-        ${FIELDS.map((field, fi) => `
-          <tr>
-            <td class="row-label ${HEIGHTS[fi]}">${LABELS[fi]}</td>
-            ${DIAS_KEY.map(dia => {
-              const reg = mapa[dia];
-              const val = reg ? (reg[field] || '') : '';
-              const isFeriado = reg && reg.feriado;
-              if (isFeriado && !val) {
-                return `<td class="content-cell feriado ${HEIGHTS[fi]}">FERIADO</td>`;
-              }
-              return `<td class="content-cell ${HEIGHTS[fi]}">${val}</td>`;
-            }).join('')}
-          </tr>`).join('')}
-      </tbody>`;
-
-    block.appendChild(table);
-    return block;
-  }
-
-  // ── Busca e processa dados ──
-  async function carregar() {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}`;
-
-    let raw;
-    try {
-      const res = await fetch(url);
-      raw = await res.text();
-    } catch(e) {
-      document.getElementById('loading').style.display = 'none';
-      const err = document.getElementById('erro');
-      err.style.display = 'block';
-      err.textContent = '❌ Erro ao acessar a planilha. Verifique se ela está pública (Compartilhar → Qualquer pessoa com o link).';
-      return;
-    }
-
-    // Remove o wrapper google.visualization.Query.setResponse(...)
-    const jsonStr = raw.replace(/^[^{]*/, '').replace(/\);?\s*$/, '');
-    let data;
-    try { data = JSON.parse(jsonStr); } catch(e) {
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('erro').style.display = 'block';
-      document.getElementById('erro').textContent = '❌ Erro ao processar dados da planilha.';
-      return;
-    }
-
-    const cols = data.table.cols.map(c => c.label.trim().toUpperCase());
-    const rows  = data.table.rows || [];
-
-    // Mapa de colunas
-    const idx = {
-      id:               cols.indexOf('ID'),
-      periodo:          cols.indexOf('PERÍODO'),
-      data:             cols.indexOf('DATA'),
-      proposta:         cols.indexOf('PROPOSTA E ESPAÇO'),
-      materiais:        cols.indexOf('MATERIAIS'),
-      intencionalidade: cols.indexOf('INTENCIONALIDADE'),
-      desenvolvimento:  cols.indexOf('DESENVOLVIMENTO'),
-      leitura:          cols.indexOf('LEITURA DIÁRIA'),
-    };
-
-    function cellVal(row, i) {
-      if (i < 0 || !row.c[i]) return '';
-      const c = row.c[i];
-      if (c.f) return c.f;   // valor formatado
-      if (c.v === null || c.v === undefined) return '';
-      return String(c.v);
-    }
-
-    // Parse registros
-    let registros = rows.map(row => ({
-      periodo:          cellVal(row, idx.periodo),
-      data:             cellVal(row, idx.data),
-      proposta:         cellVal(row, idx.proposta),
-      materiais:        cellVal(row, idx.materiais),
-      intencionalidade: cellVal(row, idx.intencionalidade),
-      desenvolvimento:  cellVal(row, idx.desenvolvimento),
-      leitura:          cellVal(row, idx.leitura),
-    })).filter(r => r.data);
-
-    // Filtra por período
-    const periodoFiltro = periodoParam.toUpperCase();
-    registros = registros.filter(r => r.periodo.toUpperCase().includes(periodoFiltro) || periodoFiltro === '');
-
-    // Filtra por intervalo de datas
-    function parseData(str) {
-      if (!str) return null;
-      str = str.trim();
-      if (str.includes('/')) {
-        const p = str.split('/');
-        return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
-      }
-      return new Date(str);
-    }
-
-    if (dataInicioParam || dataFimParam) {
-      const dInicio = dataInicioParam ? parseData(dataInicioParam) : null;
-      const dFim    = dataFimParam    ? parseData(dataFimParam)    : null;
-      registros = registros.filter(r => {
-        const d = parseData(r.data);
-        if (!d || isNaN(d)) return false;
-        if (dInicio && d < dInicio) return false;
-        if (dFim    && d > dFim)    return false;
-        return true;
-      });
-    }
-
-    document.getElementById('loading').style.display = 'none';
-
-    if (registros.length === 0) {
-      const err = document.getElementById('erro');
-      err.style.display = 'block';
-      err.textContent = `⚠️ Nenhum registro encontrado para ${periodoParam} entre ${dataInicioParam} e ${dataFimParam}.`;
-      return;
-    }
-
-    // Título do período (title case)
-    const periodoLabel = periodoParam.charAt(0).toUpperCase() + periodoParam.slice(1).toLowerCase();
-
-    // Agrupa por semana e monta blocos
-    const semanas = agruparPorSemana(registros);
-    const container = document.getElementById('container');
-    Object.keys(semanas).sort().forEach(key => {
-      const { seg, registros: regs } = semanas[key];
-      container.appendChild(montarSemana(seg, regs, periodoLabel));
     });
   }
-
-  carregar();
 </script>
 </body>
 </html>

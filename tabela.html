@@ -231,14 +231,19 @@
 <script>
   const p = new URLSearchParams(window.location.search);
 
-  const logo = p.get('logo');
-  if (logo) {
+  (function loadLogo() {
+    const raw = p.get('logo');
+    if (!raw) return;
     const img = document.getElementById('logoWatermark');
-    const match = logo.match(/\/d\/([\w-]+)/);
-    img.src = match
-      ? 'https://drive.google.com/uc?export=view&id=' + match[1]
-      : logo;
-  }
+    const match = raw.match(/[-\w]{25,}/);
+    if (!match) return;
+    const fileId = match[0];
+    const primary  = 'https://lh3.googleusercontent.com/d/' + fileId;
+    const fallback = 'https://drive.google.com/uc?export=view&id=' + fileId;
+    img.onload  = function() { img.onload = null; img.onerror = null; img.style.display = 'block'; };
+    img.onerror = function() { img.onerror = null; if (img.src !== fallback) { img.src = fallback; } };
+    img.src = primary;
+  })();
 
   const periodo        = p.get('periodo')         || 'Manhã';
   const data           = p.get('data')            || '';

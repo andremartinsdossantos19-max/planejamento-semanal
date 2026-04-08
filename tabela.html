@@ -209,10 +209,10 @@
   const SHEET_ID  = '1iSB84o-0CW5NlwpSyfZiubAGD2oNi_8sptXmVVJB_9k';
   const SHEET_TAB = 'PLANEJAMENTO';
 
-  const mesParam    = getParam('mes');    // ex: "06"
-  const anoParam    = getParam('ano');    // ex: "2025"
-  const periodoParam = getParam('periodo') || 'Manhã';
-  const logoParam   = extractUrl(getParam('logo'));
+  const dataInicioParam = getParam('datainicio'); // ex: "01/04/2026"
+  const dataFimParam    = getParam('datafim');    // ex: "30/04/2026"
+  const periodoParam    = getParam('periodo') || 'Manhã';
+  const logoParam       = extractUrl(getParam('logo'));
 
   const DIAS_SEMANA = ['Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira'];
   const DIAS_KEY    = ['seg','ter','qua','qui','sex'];
@@ -416,17 +416,26 @@
     const periodoFiltro = periodoParam.toUpperCase();
     registros = registros.filter(r => r.periodo.toUpperCase().includes(periodoFiltro) || periodoFiltro === '');
 
-    // Filtra por mês/ano se passados
-    if (mesParam && anoParam) {
+    // Filtra por intervalo de datas
+    function parseData(str) {
+      if (!str) return null;
+      str = str.trim();
+      if (str.includes('/')) {
+        const p = str.split('/');
+        return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
+      }
+      return new Date(str);
+    }
+
+    if (dataInicioParam || dataFimParam) {
+      const dInicio = dataInicioParam ? parseData(dataInicioParam) : null;
+      const dFim    = dataFimParam    ? parseData(dataFimParam)    : null;
       registros = registros.filter(r => {
-        const s = r.data.trim();
-        let d;
-        if (s.includes('/')) {
-          const p = s.split('/');
-          d = new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
-        } else { d = new Date(s); }
-        if (isNaN(d)) return false;
-        return (d.getMonth()+1) === parseInt(mesParam) && d.getFullYear() === parseInt(anoParam);
+        const d = parseData(r.data);
+        if (!d || isNaN(d)) return false;
+        if (dInicio && d < dInicio) return false;
+        if (dFim    && d > dFim)    return false;
+        return true;
       });
     }
 
@@ -435,7 +444,7 @@
     if (registros.length === 0) {
       const err = document.getElementById('erro');
       err.style.display = 'block';
-      err.textContent = `⚠️ Nenhum registro encontrado para ${periodoParam} em ${mesParam}/${anoParam}.`;
+      err.textContent = `⚠️ Nenhum registro encontrado para ${periodoParam} entre ${dataInicioParam} e ${dataFimParam}.`;
       return;
     }
 

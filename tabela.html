@@ -48,11 +48,12 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 320px;
-      opacity: 0.10;
+      width: 55%;
+      opacity: 0.13;
       z-index: 0;
       pointer-events: none;
       user-select: none;
+      display: block;
     }
 
     table {
@@ -185,11 +186,7 @@
 
 <div class="page">
 
-  <img
-    class="watermark"
-    id="logoWatermark"
-    alt=""
-  />
+  <img class="watermark" id="logoWatermark" alt="" />
 
   <table id="mainTable">
     <colgroup>
@@ -287,7 +284,7 @@
     function showLogo(src) {
       img.onload  = null;
       img.onerror = null;
-      img.src = src;
+      img.src     = src;
     }
     img.onload  = function() { showLogo(img.src); };
     img.onerror = function() { if (img.src !== fallback) img.src = fallback; };
